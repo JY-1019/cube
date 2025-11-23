@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title>3D Rubik's Cube Simulator | Speedcubing Timer & Undo Support</title>
+    <title>3D Cube Simulator | Speedcubing Timer & Undo Support</title>
+    <meta name="google-site-verification" content="Fx5TqHq5b8GzJxq3rtwl2mHV3v4CKCjbbpwtXZEUFSs" />
     
-    <meta name="description" content="Play the best interactive 3D Rubik's Cube online. Features include a precise speedcubing timer, move history (Undo/Redo), and auto-shuffle. Practice your algorithms anywhere without downloading app.">
+    <meta name="description" content="Play the best interactive 3D Cube online. Features include a precise speedcubing timer, move history (Undo/Redo), and auto-shuffle. Practice your algorithms anywhere without downloading app.">
     
-    <meta name="keywords" content="Rubik's cube online, 3D cube solver, speedcubing timer, magic cube, puzzle game">
+    <meta name="keywords" content="Cube online, 3D cube solver, speedcubing timer, magic cube, puzzle game">
     
     <meta name="robots" content="index, follow">
     
-    <meta property="og:title" content="Play 3D Rubik's Cube Online">
+    <meta property="og:title" content="Play Cube Online">
     <meta property="og:description" content="Interactive 3D Cube with Timer & Undo features. Challenge your record now!">
     <meta property="og:type" content="website">
     
@@ -205,7 +206,7 @@
 </head>
 <body>
     <div id="ui-container">
-        <h1>3D Rubik's Cube</h1>
+        <h1>3D Cube</h1>
         <p>Drag background to rotate view • Drag faces to rotate layers</p>
     </div>
 
@@ -329,7 +330,7 @@
             scene.add(backLight);
 
             // Create Cube
-            createRubiksCube();
+            createCube();
 
             // Events
             window.addEventListener('resize', onWindowResize);
@@ -448,7 +449,7 @@
             updateHistoryUI();
         }
 
-        function createRubiksCube() {
+        function createCube() {
             // Clear existing
             cubes.forEach(c => scene.remove(c));
             cubes = [];
@@ -759,7 +760,7 @@
 
         function resetCube() {
             if (isRotating) return;
-            createRubiksCube();
+            createCube();
         }
 
         function onWindowResize() {
