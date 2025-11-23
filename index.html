@@ -18,13 +18,40 @@
     <meta property="og:type" content="website">
     
     <meta name="robots" content="index, follow">
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2111666486893893"
+     crossorigin="anonymous"></script>
+     
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
         body {
             margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
             overflow: hidden;
             background: linear-gradient(135deg, #1e1e2f, #2a2a40);
             font-family: 'Inter', sans-serif;
             user-select: none;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
         }
         #ui-container {
             position: absolute;
@@ -33,6 +60,7 @@
             text-align: center;
             pointer-events: none;
             z-index: 10;
+            padding: 0 20px;
         }
         #info {
             display: none;
@@ -149,6 +177,11 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             backdrop-filter: blur(4px);
+            white-space: nowrap;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .game-btn:hover {
             background: rgba(255, 255, 255, 0.3);
@@ -170,6 +203,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-shrink: 0;
         }
         .history-btn:hover:not(:disabled) {
             background: rgba(255, 255, 255, 0.2);
@@ -201,6 +235,341 @@
             pointer-events: auto;
         }
 
+        /* Responsive button adjustments */
+        /* Tablet and large phones (641px - 900px) */
+        @media (max-width: 900px) {
+            .game-btn {
+                padding: 11px 18px;
+                font-size: 15px;
+                letter-spacing: 0.5px;
+                border-radius: 25px;
+            }
+            .history-btn {
+                width: 48px;
+                height: 48px;
+                font-size: 22px;
+            }
+            #controls-ui {
+                gap: 16px;
+            }
+            #timer-container {
+                right: 15px;
+                top: 15px;
+                min-width: 140px;
+                padding: 8px;
+            }
+            #timer {
+                font-size: 28px;
+            }
+            #timer-title {
+                font-size: 12px;
+            }
+        }
+
+        /* Medium phones (481px - 640px) */
+        @media (max-width: 640px) {
+            .game-btn {
+                padding: 9px 14px;
+                font-size: 13px;
+                letter-spacing: 0.3px;
+                border-radius: 20px;
+            }
+            .history-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 20px;
+                min-width: 44px;
+                min-height: 44px;
+            }
+            #controls-ui {
+                gap: 10px;
+                bottom: 18px;
+            }
+            h1 {
+                font-size: 1.25rem;
+            }
+            p {
+                font-size: 0.9rem;
+            }
+            #timer-container {
+                right: 12px;
+                top: 12px;
+                min-width: 130px;
+                padding: 6px;
+            }
+            #timer {
+                font-size: 22px;
+            }
+            #timer-title {
+                font-size: 11px;
+            }
+            .icon-btn {
+                font-size: 14px;
+                padding: 4px 8px;
+            }
+        }
+
+        /* Small phones (max 480px) */
+        @media (max-width: 480px) {
+            .game-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+                letter-spacing: 0;
+                border-radius: 18px;
+            }
+            .history-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+                min-width: 40px;
+                min-height: 40px;
+            }
+            #controls-ui {
+                gap: 8px;
+                bottom: 12px;
+            }
+            h1 {
+                font-size: 1.1rem;
+            }
+            p {
+                font-size: 0.85rem;
+            }
+            #timer-container {
+                right: 10px;
+                top: 10px;
+                min-width: 120px;
+                padding: 5px;
+            }
+            #timer {
+                font-size: 18px;
+            }
+            #timer-title {
+                font-size: 10px;
+            }
+            .icon-btn {
+                font-size: 13px;
+                padding: 3px 6px;
+            }
+        }
+
+        /* Extra small phones (max 380px) */
+        @media (max-width: 380px) {
+            .game-btn {
+                padding: 7px 10px;
+                font-size: 11px;
+            }
+            .history-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+                min-width: 36px;
+                min-height: 36px;
+            }
+            #controls-ui {
+                gap: 6px;
+                bottom: 10px;
+            }
+            #timer-container {
+                right: 8px;
+                top: 8px;
+                min-width: 110px;
+                padding: 4px;
+            }
+            #timer {
+                font-size: 16px;
+            }
+            #timer-title {
+                font-size: 9px;
+            }
+            .icon-btn {
+                font-size: 12px;
+                padding: 3px 5px;
+            }
+        }
+
+        /* Info Button */
+        #infoBtn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: auto;
+            transition: all 0.3s;
+            z-index: 15;
+            padding: 0;
+            font-family: serif;
+            letter-spacing: 0;
+        }
+        #infoBtn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        /* Game Guide Modal */
+        #gameGuideModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+            pointer-events: auto;
+        }
+        #gameGuideModal.active {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .guide-container {
+            background: linear-gradient(135deg, #2a2a40, #1e1e2f);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease;
+            margin-top: 20px;
+            position: relative;
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .guide-container h2 {
+            color: #fff;
+            font-size: 1.5rem;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+        }
+        .guide-container h2:first-child {
+            margin-top: 0;
+        }
+
+        .guide-container p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin: 12px 0;
+            color: #ccc;
+        }
+
+        .guide-container strong {
+            color: #fff;
+        }
+
+        .guide-container ul {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        .guide-container li {
+            padding: 10px 0 10px 25px;
+            position: relative;
+            color: #ccc;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .guide-container li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.2rem;
+        }
+
+        .guide-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        #closeGuideBtn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        #closeGuideBtn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        /* Mobile guide adjustments */
+        @media (max-width: 640px) {
+            .guide-container {
+                padding: 20px;
+                border-radius: 10px;
+                max-width: 95vw;
+            }
+            .guide-container h2 {
+                font-size: 1.25rem;
+                margin-top: 15px;
+            }
+            .guide-container p,
+            .guide-container li {
+                font-size: 0.9rem;
+            }
+            #infoBtn {
+                width: 36px;
+                height: 36px;
+                font-size: 20px;
+                top: 12px;
+                left: 12px;
+            }
+            #gameGuideModal.active {
+                padding: 10px;
+            }
+        }
+
 
     </style>
 </head>
@@ -208,6 +577,53 @@
     <div id="ui-container">
         <h1>3D Cube</h1>
         <p>Drag background to rotate view • Drag faces to rotate layers</p>
+    </div>
+
+    <button id="infoBtn" title="Game Guide">i</button>
+
+    <div id="gameGuideModal">
+        <div class="guide-container">
+            <button id="closeGuideBtn" title="Close">×</button>
+            <h2>🎮 How to Play 3D Magic Cube</h2>
+            <p>
+                Welcome to the most realistic <strong>3D Cube Simulator</strong> on the web. 
+                This tool is designed for both beginners and professional speedcubers who want to practice their algorithms anywhere, anytime.
+                No app download is required—just open your browser and start solving!
+            </p>
+            <ul>
+                <li><strong>Rotate View:</strong> Click and drag the background area to rotate the camera angle.</li>
+                <li><strong>Rotate Layers:</strong> Click and drag any face of the cube to rotate the layers, just like a real puzzle.</li>
+                <li><strong>Timer:</strong> Use the built-in stopwatch to track your solving speed. The timer measures down to centiseconds.</li>
+                <li><strong>Undo/Redo:</strong> Made a mistake? Use the Undo button to go back to the previous state.</li>
+            </ul>
+
+            <h2>🧩 About the Magic Cube Puzzle</h2>
+            <p>
+                The Magic Cube, originally invented in 1974 by Hungarian sculptor <strong>Ernő Rubik</strong>, is the world's best-selling puzzle game. 
+                While it may look simple, a standard 3x3x3 cube has over <strong>43 quintillion</strong> (43,252,003,274,489,856,000) possible configurations.
+            </p>
+            <p>
+                Despite this massive number of possibilities, mathematicians have proven that any "scrambled" cube can be solved in <strong>20 moves or less</strong>. 
+                This number is famously known as "God's Number". Can you find the most efficient path to the solution?
+            </p>
+
+            <h2>🚀 Speedcubing Tips for Beginners</h2>
+            <p>
+                If you want to solve the puzzle faster (Speedcubing), try learning the <strong>CFOP method</strong> (Cross, F2L, OLL, PLL). 
+                It is the most popular method used by world record holders.
+            </p>
+            <p>
+                1. <strong>White Cross:</strong> Start by making a white cross on the top face.<br>
+                2. <strong>F2L (First Two Layers):</strong> Solve the first two layers simultaneously.<br>
+                3. <strong>OLL (Orientation of the Last Layer):</strong> Make the top face all yellow.<br>
+                4. <strong>PLL (Permutation of the Last Layer):</strong> Move the top pieces to their correct spots to finish the cube.
+            </p>
+
+            <div class="guide-footer">
+                &copy; 2024 3D Magic Cube Simulator. All rights reserved. <br>
+                Optimize your solving skills with our free online tool.
+            </div>
+        </div>
     </div>
 
     <div id="info">Drag faces to rotate layers. Click background to rotate camera.</div>
@@ -305,8 +721,13 @@
 
             // Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            // Cap DPR for mobile performance
+            const maxDPR = Math.min(window.devicePixelRatio || 1, 2);
+            renderer.setPixelRatio(maxDPR);
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            // Ensure canvas fills viewport properly
+            renderer.domElement.style.width = '100%';
+            renderer.domElement.style.height = '100%';
             document.body.appendChild(renderer.domElement);
 
             // Controls (OrbitControls)
@@ -354,9 +775,34 @@
             document.getElementById('timerCollapseBtn').addEventListener('click', toggleTimerCollapse);
             document.getElementById('timerExpandBtn').addEventListener('click', toggleTimerCollapse);
 
+            // Game Guide Controls
+            document.getElementById('infoBtn').addEventListener('click', toggleGameGuide);
+            document.getElementById('closeGuideBtn').addEventListener('click', closeGameGuide);
+            document.getElementById('gameGuideModal').addEventListener('click', closeGameGuideOnBackdrop);
+
 
             // Animation Loop
             animate();
+        }
+
+        // --- Game Guide Logic ---
+        function toggleGameGuide() {
+            const modal = document.getElementById('gameGuideModal');
+            modal.classList.toggle('active');
+            document.body.style.overflow = modal.classList.contains('active') ? 'hidden' : '';
+        }
+
+        function closeGameGuide() {
+            const modal = document.getElementById('gameGuideModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function closeGameGuideOnBackdrop(event) {
+            // Close only if clicking on the backdrop itself, not the container
+            if (event.target.id === 'gameGuideModal') {
+                closeGameGuide();
+            }
         }
 
         // --- Timer Logic ---
