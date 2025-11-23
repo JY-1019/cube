@@ -70,7 +70,8 @@
             bottom: 12px;
             width: 100%;
             text-align: center;
-            pointer-events: none;
+            pointer-events: auto;
+            z-index: 15;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -584,11 +585,11 @@
         <p>Drag background to rotate view • Drag faces to rotate layers</p>
     </div>
 
-    <button id="infoBtn" title="Game Guide">i</button>
+    <button id="infoBtn" title="Game Guide" onclick="toggleGameGuide(); return false;">i</button>
 
     <div id="gameGuideModal">
         <div class="guide-container">
-            <button id="closeGuideBtn" title="Close">×</button>
+            <button id="closeGuideBtn" title="Close" onclick="closeGameGuide(); return false;">×</button>
             <h2>🎮 How to Play 3D Magic Cube</h2>
             <p>
                 Welcome to the most realistic <strong>3D Cube Simulator</strong> on the web. 
@@ -636,22 +637,22 @@
     <div id="timer-container">
         <div id="timer-header">
             <span id="timer-title">Timer</span>
-            <button id="timerCollapseBtn" class="collapse-btn" title="Minimize">▼</button>
+            <button id="timerCollapseBtn" class="collapse-btn" title="Minimize" onclick="toggleTimerCollapse(); return false;">▼</button>
         </div>
         <div id="timer">00:00.00</div>
         <div id="timer-controls">
-            <button id="timerStartBtn" class="icon-btn" title="Start">▶</button>
-            <button id="timerStopBtn" class="icon-btn" title="Pause">⏸</button>
-            <button id="timerResetBtn" class="icon-btn" title="Reset Timer">⟲</button>
+            <button id="timerStartBtn" class="icon-btn" title="Start" onclick="startTimerManual(); return false;">▶</button>
+            <button id="timerStopBtn" class="icon-btn" title="Pause" onclick="stopTimer(); return false;">⏸</button>
+            <button id="timerResetBtn" class="icon-btn" title="Reset Timer" onclick="resetTimer(); return false;">⟲</button>
         </div>
         <button id="timerExpandBtn" class="icon-btn" title="Show Timer" style="display:none;">⏱️</button>
     </div>
 
     <div id="controls-ui">
-        <button id="undoBtn" class="history-btn" title="Undo" disabled>↶</button>
-        <button id="shuffleBtn" class="game-btn">Shuffle</button>
-        <button id="resetBtn" class="game-btn">Reset Cube</button>
-        <button id="redoBtn" class="history-btn" title="Redo" disabled>↷</button>
+        <button id="undoBtn" class="history-btn" title="Undo" disabled onclick="undoMove(); return false;">↶</button>
+        <button id="shuffleBtn" class="game-btn" onclick="shuffleCube(); return false;">Shuffle</button>
+        <button id="resetBtn" class="game-btn" onclick="resetCube(); return false;">Reset Cube</button>
+        <button id="redoBtn" class="history-btn" title="Redo" disabled onclick="redoMove(); return false;">↷</button>
     </div>
 
     <!-- Import map for Three.js -->
@@ -952,6 +953,19 @@
         function onMouseDown(event) {
             if (isRotating) return;
 
+            // Don't intercept button clicks - check if click is in UI areas
+            const target = event.target;
+            if (target.classList.contains('game-btn') || 
+                target.classList.contains('history-btn') ||
+                target.classList.contains('icon-btn') ||
+                target.id === 'infoBtn' ||
+                target.classList.contains('collapse-btn') ||
+                target.closest('#controls-ui') ||
+                target.closest('#timer-container') ||
+                target.closest('#infoBtn')) {
+                return;
+            }
+
             // Update mouse coordinates
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -1226,8 +1240,12 @@
             renderer.render(scene, camera);
         }
 
-        // Start
-        init();
+        // Start - Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
 
     </script>
 </body>
