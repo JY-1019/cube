@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubik's Cube Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1e1e2f, #2a2a40);
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+        #ui-container {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+        #info {
+            display: none;
+        }
+        #controls-ui {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        #timer-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            text-align: right;
+            pointer-events: auto;
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+        #timer-container.collapsed {
+            min-width: auto;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.1);
+        }
+        #timer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        #timer-title {
+            font-size: 14px;
+            color: #aaa;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-right: 10px;
+        }
+        #timer-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        #timer {
+            font-size: 32px;
+            font-weight: bold;
+            font-family: monospace;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            margin-bottom: 5px;
+            display: block;
+        }
+        /* Hide elements when collapsed */
+        #timer-container.collapsed #timer,
+        #timer-container.collapsed #timer-controls,
+        #timer-container.collapsed #timer-title {
+            display: none;
+        }
+        /* Show expand button when collapsed */
+        #timer-expand-btn {
+            display: none;
+        }
+        #timer-container.collapsed #timer-expand-btn {
+            display: block;
+        }
+        /* Collapse button style */
+        .collapse-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 0;
+        }
+        .collapse-btn:hover {
+            color: white;
+        }
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+        /* Main Game Buttons */
+        .game-btn {
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            backdrop-filter: blur(4px);
+        }
+        .game-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        /* Undo/Redo Buttons - Distinct Style */
+        .history-btn {
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #aaa;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .history-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: white;
+            transform: scale(1.1);
+        }
+        .history-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: transparent;
+        }
+        h1 {
+            color: white;
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        p {
+            color: #ccc;
+            margin: 0;
+            font-size: 1rem;
+        }
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div id="ui-container">
+        <h1>Rubik's Cube</h1>
+        <p>Drag background to rotate view • Drag faces to rotate layers</p>
+    </div>
+
+    <div id="info">Drag faces to rotate layers. Click background to rotate camera.</div>
+
+    <div id="timer-container">
+        <div id="timer-header">
+            <span id="timer-title">Timer</span>
+            <button id="timerCollapseBtn" class="collapse-btn" title="Minimize">▼</button>
+        </div>
+        <div id="timer">00:00.00</div>
+        <div id="timer-controls">
+            <button id="timerStartBtn" class="icon-btn" title="Start">▶</button>
+            <button id="timerStopBtn" class="icon-btn" title="Pause">⏸</button>
+            <button id="timerResetBtn" class="icon-btn" title="Reset Timer">⟲</button>
+        </div>
+        <button id="timerExpandBtn" class="icon-btn" title="Show Timer" style="display:none;">⏱️</button>
+    </div>
+
+    <div id="controls-ui">
+        <button id="undoBtn" class="history-btn" title="Undo" disabled>↶</button>
+        <button id="shuffleBtn" class="game-btn">Shuffle</button>
+        <button id="resetBtn" class="game-btn">Reset Cube</button>
+        <button id="redoBtn" class="history-btn" title="Redo" disabled>↷</button>
+    </div>
+
+    <!-- Import map for Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Configuration ---
+        const CUBE_SIZE = 1;
+        const SPACING = 0.05;
+        const TOTAL_SIZE = CUBE_SIZE + SPACING;
+        const ANIMATION_SPEED = 0.15; // Radians per frame approx, or use time-based
+
+        // Colors: Right(x+), Left(x-), Top(y+), Bottom(y-), Front(z+), Back(z-)
+        // Standard Scheme: Right=Red, Left=Orange, Top=White, Bottom=Yellow, Front=Green, Back=Blue
+        const COLORS = [
+            0xb90000, // Right (Red)
+            0xff5900, // Left (Orange)
+            0xffffff, // Top (White)
+            0xffd500, // Bottom (Yellow)
+            0x009b48, // Front (Green)
+            0x0045ad  // Back (Blue)
+        ];
+        const BLACK = 0x222222;
+
+        // --- Globals ---
+        let scene, camera, renderer, controls;
+        let cubes = []; // All 27 individual cubes
+        let isDragging = false;
+        let isRotating = false; // Layer rotation in progress
+        let startMouse = new THREE.Vector2();
+        let intersectPoint = new THREE.Vector3();
+        let intersectFaceNormal = new THREE.Vector3();
+        let selectedCube = null;
+
+        // Timer & History
+        // Timer & History
+        let startTime = 0;
+        let timerInterval = null;
+        let isTimerRunning = false;
+        let isTimerEnabled = true;
+        let moveHistory = [];
+        let redoStack = [];
+        let elapsedTime = 0; // Tracks accumulated time when timer is paused
+
+        // Raycaster
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // Pivot for rotation
+        const pivot = new THREE.Object3D();
+
+        // --- Initialization ---
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.add(pivot); // Add pivot to scene
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(6, 5, 8);
+            camera.lookAt(0, 0, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+
+            // Controls (OrbitControls)
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.enablePan = false;
+            controls.minDistance = 5;
+            controls.maxDistance = 20;
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            dirLight.position.set(10, 20, 10);
+            scene.add(dirLight);
+
+            const backLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            backLight.position.set(-10, -10, -10);
+            scene.add(backLight);
+
+            // Create Cube
+            createRubiksCube();
+
+            // Events
+            window.addEventListener('resize', onWindowResize);
+            // Use capture phase to intercept pointerdown before OrbitControls
+            // OrbitControls uses pointer events, so we must use pointerdown, not mousedown
+            renderer.domElement.addEventListener('pointerdown', onMouseDown, { capture: true });
+            renderer.domElement.addEventListener('pointermove', onMouseMove);
+            window.addEventListener('pointerup', onMouseUp);
+
+            // UI Buttons
+            // UI Buttons
+            document.getElementById('shuffleBtn').addEventListener('click', shuffleCube);
+            document.getElementById('resetBtn').addEventListener('click', resetCube);
+            document.getElementById('undoBtn').addEventListener('click', undoMove);
+            document.getElementById('redoBtn').addEventListener('click', redoMove);
+
+            // Timer Controls
+            document.getElementById('timerStartBtn').addEventListener('click', startTimerManual);
+            document.getElementById('timerStopBtn').addEventListener('click', stopTimer);
+            document.getElementById('timerResetBtn').addEventListener('click', resetTimer);
+            document.getElementById('timerCollapseBtn').addEventListener('click', toggleTimerCollapse);
+            document.getElementById('timerExpandBtn').addEventListener('click', toggleTimerCollapse);
+
+
+            // Animation Loop
+            animate();
+        }
+
+        // --- Timer Logic ---
+        // Manual Start
+        function startTimerManual() {
+            if (isTimerRunning) return;
+            startTimer();
+        }
+
+        function toggleTimerCollapse() {
+            const container = document.getElementById('timer-container');
+            const expandBtn = document.getElementById('timerExpandBtn');
+            const header = document.getElementById('timer-header');
+
+            container.classList.toggle('collapsed');
+
+            if (container.classList.contains('collapsed')) {
+                expandBtn.style.display = 'block';
+                header.style.display = 'none';
+            } else {
+                expandBtn.style.display = 'none';
+                header.style.display = 'flex';
+            }
+        }
+
+        function startTimer() {
+            if (isTimerRunning || !isTimerEnabled) return;
+            isTimerRunning = true;
+            // startTime is now relative to the current moment minus what we already accumulated
+            startTime = Date.now() - elapsedTime;
+            timerInterval = setInterval(updateTimer, 10);
+        }
+
+        function stopTimer() {
+            if (!isTimerRunning) return;
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            elapsedTime = Date.now() - startTime; // Save accumulated time
+        }
+
+        function resetTimer() {
+            stopTimer();
+            elapsedTime = 0;
+            startTime = 0;
+            document.getElementById('timer').textContent = "00:00.00";
+        }
+
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            const centiseconds = Math.floor((elapsed % 1000) / 10);
+
+            const pad = (n) => n.toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${pad(minutes)}:${pad(seconds)}.${pad(centiseconds)}`;
+        }
+
+        // --- History Logic ---
+        function updateHistoryUI() {
+            document.getElementById('undoBtn').disabled = moveHistory.length === 0 || isRotating;
+            document.getElementById('redoBtn').disabled = redoStack.length === 0 || isRotating;
+        }
+
+        function recordMove(axis, index, direction) {
+            moveHistory.push({ axis, index, direction });
+            redoStack = []; // Clear redo stack on new move
+            updateHistoryUI();
+            // Auto-start timer on move if it's at 0 and not running?
+            // User asked for "Start from timer measurement", implying manual?
+            // But usually games auto-start. Let's keep auto-start if it's at 0.
+            if (elapsedTime === 0 && !isTimerRunning) {
+                startTimer();
+            }
+        }
+
+        function undoMove() {
+            if (moveHistory.length === 0 || isRotating) return;
+            const move = moveHistory.pop();
+            redoStack.push(move);
+            // Rotate in opposite direction
+            rotateLayer(move.axis, null, -move.direction, move.index, true); // true = isUndoRedo
+            updateHistoryUI();
+        }
+
+        function redoMove() {
+            if (redoStack.length === 0 || isRotating) return;
+            const move = redoStack.pop();
+            moveHistory.push(move);
+            rotateLayer(move.axis, null, move.direction, move.index, true); // true = isUndoRedo
+            updateHistoryUI();
+        }
+
+        function createRubiksCube() {
+            // Clear existing
+            cubes.forEach(c => scene.remove(c));
+            cubes = [];
+
+            const geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
+
+            for (let x = -1; x <= 1; x++) {
+                for (let y = -1; y <= 1; y++) {
+                    for (let z = -1; z <= 1; z++) {
+                        // Create materials for this specific cube based on its position
+                        // Order: Right, Left, Top, Bottom, Front, Back
+                        const materials = COLORS.map((color, i) => {
+                            let isExternal = false;
+                            if (i === 0 && x === 1) isExternal = true;  // Right
+                            if (i === 1 && x === -1) isExternal = true; // Left
+                            if (i === 2 && y === 1) isExternal = true;  // Top
+                            if (i === 3 && y === -1) isExternal = true; // Bottom
+                            if (i === 4 && z === 1) isExternal = true;  // Front
+                            if (i === 5 && z === -1) isExternal = true; // Back
+
+                            return new THREE.MeshStandardMaterial({
+                                color: isExternal ? color : BLACK,
+                                roughness: 0.5,
+                                metalness: 0.1
+                            });
+                        });
+
+                        const cube = new THREE.Mesh(geometry, materials);
+
+                        // Add rounded edges visual (optional but looks nice)
+                        // For simplicity, we'll stick to the box but add a black inset or border if needed.
+                        // Actually, let's just position them with spacing.
+
+                        cube.position.set(x * TOTAL_SIZE, y * TOTAL_SIZE, z * TOTAL_SIZE);
+
+                        // Store initial grid coordinates for logic if needed,
+                        // but we will rely on world position for selection.
+                        cube.userData = { isCubie: true };
+
+                        scene.add(cube);
+                        cubes.push(cube);
+                    }
+                }
+            }
+        }
+
+        // --- Interaction Logic ---
+
+        function onMouseDown(event) {
+            if (isRotating) return;
+
+            // Update mouse coordinates
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(cubes);
+
+            if (intersects.length > 0) {
+                // CRITICAL: Stop OrbitControls from receiving this event
+                // OrbitControls listens to pointerdown, so this must be a pointerdown handler
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+
+                controls.enabled = false;
+
+                selectedCube = intersects[0].object;
+                intersectPoint.copy(intersects[0].point);
+                intersectFaceNormal.copy(intersects[0].face.normal);
+                intersectFaceNormal.transformDirection(selectedCube.matrixWorld).round();
+
+                startMouse.set(event.clientX, event.clientY);
+                isDragging = true;
+            } else {
+                // Clicked on background - ensure controls are enabled
+                controls.enabled = true;
+            }
+        }
+
+        function onMouseMove(event) {
+            if (!isDragging || isRotating || !selectedCube) return;
+
+            const dx = event.clientX - startMouse.x;
+            const dy = event.clientY - startMouse.y;
+
+            // Threshold to prevent accidental small moves
+            if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+
+            let moveVector = new THREE.Vector2(dx, -dy);
+            moveVector.normalize();
+
+            const axes = [
+                new THREE.Vector3(1, 0, 0),
+                new THREE.Vector3(0, 1, 0),
+                new THREE.Vector3(0, 0, 1)
+            ];
+
+            let bestAxis = null;
+            let maxDot = -1;
+            let dragDirection = 0;
+
+            // Filter out the axis parallel to the normal (we can't drag along the normal)
+            // We only consider axes perpendicular to the face normal
+            const validAxes = axes.filter(axis => Math.abs(axis.dot(intersectFaceNormal)) < 0.1);
+
+            validAxes.forEach(axis => {
+                // To determine how the mouse movement maps to this 3D axis,
+                // we project the axis onto the screen.
+
+                // 1. Get a point slightly along the axis from the intersection point
+                const p1 = intersectPoint.clone();
+                const p2 = intersectPoint.clone().add(axis);
+
+                // 2. Project both to screen space
+                const s1 = projectVector(p1);
+                const s2 = projectVector(p2);
+
+                // 3. Calculate the 2D vector of this axis on screen
+                // CRITICAL FIX: Flip Y component because screen coords are Y-down but moveVector is Y-up
+                const axisDir2D = new THREE.Vector2(s2.x - s1.x, -(s2.y - s1.y)).normalize();
+
+                // 4. Check alignment with mouse drag
+                const dot = Math.abs(axisDir2D.dot(moveVector));
+
+                if (dot > maxDot) {
+                    maxDot = dot;
+                    bestAxis = axis;
+                    // Determine direction:
+                    // If we drag in the direction of the axis on screen, it's positive
+                    dragDirection = axisDir2D.dot(moveVector) > 0 ? 1 : -1;
+                }
+            });
+
+            // Lower threshold for dot product to ensure we catch the intent
+            if (bestAxis && maxDot > 0.5) {
+                // Determine Rotation Axis and Direction using Cross Product
+                // Rule: Rotation Axis = Cross(Normal, DragVector)
+                // DragVector = bestAxis * dragDirection
+
+                const dragVector3D = bestAxis.clone().multiplyScalar(dragDirection);
+                const rotationVector = new THREE.Vector3().crossVectors(intersectFaceNormal, dragVector3D);
+
+                // Extract axis and sign from the resulting rotation vector
+                // The rotation vector will be along one of the principal axes (X, Y, or Z)
+                // Its sign tells us the rotation direction
+
+                let rotationAxis = null;
+                let finalDirection = 0;
+
+                if (Math.abs(rotationVector.x) > 0.9) {
+                    rotationAxis = new THREE.Vector3(1, 0, 0);
+                    finalDirection = Math.sign(rotationVector.x);
+                } else if (Math.abs(rotationVector.y) > 0.9) {
+                    rotationAxis = new THREE.Vector3(0, 1, 0);
+                    finalDirection = Math.sign(rotationVector.y);
+                } else if (Math.abs(rotationVector.z) > 0.9) {
+                    rotationAxis = new THREE.Vector3(0, 0, 1);
+                    finalDirection = Math.sign(rotationVector.z);
+                }
+
+                if (rotationAxis) {
+                    rotateLayer(rotationAxis, selectedCube.position, finalDirection);
+                    isDragging = false;
+                    selectedCube = null;
+                    controls.enabled = true;
+                }
+            }
+        }
+
+        function projectVector(vec3) {
+            const v = vec3.clone().project(camera);
+            // Better: Convert NDC to pixel coords to match moveVector
+            const x = (v.x * 0.5 + 0.5) * window.innerWidth;
+            const y = -(v.y * 0.5 - 0.5) * window.innerHeight;
+            return { x, y };
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+            selectedCube = null;
+            // Always re-enable controls on mouse up
+            controls.enabled = true;
+        }
+
+        // --- Rotation Logic ---
+
+        // Modified rotateLayer to handle explicit index and history
+        function rotateLayer(axis, position, direction, explicitIndex = null, isUndoRedo = false, isShuffle = false) {
+            if (isRotating) return;
+            isRotating = true;
+
+            // Determine which layer to rotate
+            let layerIndex;
+            if (explicitIndex !== null) {
+                layerIndex = explicitIndex;
+            } else {
+                if (axis.x !== 0) layerIndex = Math.round(position.x / TOTAL_SIZE);
+                if (axis.y !== 0) layerIndex = Math.round(position.y / TOTAL_SIZE);
+                if (axis.z !== 0) layerIndex = Math.round(position.z / TOTAL_SIZE);
+            }
+
+            // Record move if it's a user action (not undo/redo or shuffle)
+            if (!isUndoRedo && !isShuffle) {
+                recordMove(axis, layerIndex, direction);
+            }
+
+            // Find cubes in this layer
+            const layerCubes = cubes.filter(cube => {
+                if (axis.x !== 0) return Math.abs(cube.position.x - layerIndex * TOTAL_SIZE) < 0.1;
+                if (axis.y !== 0) return Math.abs(cube.position.y - layerIndex * TOTAL_SIZE) < 0.1;
+                if (axis.z !== 0) return Math.abs(cube.position.z - layerIndex * TOTAL_SIZE) < 0.1;
+                return false;
+            });
+
+            // Create a pivot object
+            const pivot = new THREE.Object3D();
+            pivot.rotation.set(0, 0, 0);
+            pivot.updateMatrixWorld();
+            scene.add(pivot);
+
+            // Attach cubes to pivot
+            layerCubes.forEach(cube => {
+                pivot.attach(cube);
+            });
+
+            // Animate rotation
+            const targetRotation = (Math.PI / 2) * direction;
+            const axisVector = axis.clone();
+
+            let progress = 0;
+            const speed = isShuffle ? 0.5 : ANIMATION_SPEED; // Faster for shuffle
+
+            function animateRotation() {
+                progress += speed;
+                if (progress >= 1) progress = 1;
+
+                pivot.setRotationFromAxisAngle(axisVector, targetRotation * progress);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateRotation);
+                } else {
+                    pivot.updateMatrixWorld();
+                    // Detach cubes and remove pivot
+                    layerCubes.forEach(cube => {
+                        scene.attach(cube);
+                        // Round positions and rotations to prevent drift
+                        // CRITICAL FIX: Round to nearest multiple of TOTAL_SIZE to preserve spacing
+                        cube.position.x = Math.round(cube.position.x / TOTAL_SIZE) * TOTAL_SIZE;
+                        cube.position.y = Math.round(cube.position.y / TOTAL_SIZE) * TOTAL_SIZE;
+                        cube.position.z = Math.round(cube.position.z / TOTAL_SIZE) * TOTAL_SIZE;
+
+                        cube.rotation.x = Math.round(cube.rotation.x / (Math.PI/2)) * (Math.PI/2);
+                        cube.rotation.y = Math.round(cube.rotation.y / (Math.PI/2)) * (Math.PI/2);
+                        cube.rotation.z = Math.round(cube.rotation.z / (Math.PI/2)) * (Math.PI/2);
+                        cube.updateMatrixWorld();
+                    });
+                    scene.remove(pivot);
+                    isRotating = false;
+                    updateHistoryUI(); // Ensure UI is updated after rotation
+                }
+            }
+            animateRotation();
+        }
+
+        // --- Game Features ---
+
+        function shuffleCube() {
+            if (isRotating) return;
+
+            const axes = [
+                new THREE.Vector3(1, 0, 0),
+                new THREE.Vector3(0, 1, 0),
+                new THREE.Vector3(0, 0, 1)
+            ];
+            const positions = [-TOTAL_SIZE, 0, TOTAL_SIZE];
+            const directions = [1, -1];
+
+            let moves = 20;
+            const interval = 150; // Fast shuffle
+
+            function nextMove() {
+                if (moves <= 0) return;
+
+                const axis = axes[Math.floor(Math.random() * axes.length)];
+                const posVal = positions[Math.floor(Math.random() * positions.length)];
+                const point = new THREE.Vector3();
+                if (axis.x) point.x = posVal;
+                if (axis.y) point.y = posVal;
+                if (axis.z) point.z = posVal;
+
+                const dir = directions[Math.floor(Math.random() * directions.length)];
+
+                // We need to bypass the animation for instant shuffle or speed it up
+                // For simplicity, let's just call rotateLayer but we need to wait for it
+                // Since rotateLayer is async (animation), we can't easily loop.
+                // Let's make a fast version or just chain them.
+
+                // Actually, let's just trigger it and wait.
+                rotateLayer(axis, point, dir, null, false, true);
+
+                moves--;
+                setTimeout(nextMove, 400); // Wait for animation to finish
+            }
+
+            nextMove();
+        }
+
+        function resetCube() {
+            if (isRotating) return;
+            createRubiksCube();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Start
+        init();
+
+    </script>
+</body>
+</html>
