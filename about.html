@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About 3D Cube Simulator - Guide & History</title>
+    <meta name="description" content="Learn about the history of the Magic Cube, how to play the 3D Cube Simulator, and speedcubing algorithms like CFOP.">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e1e2f, #2a2a40);
+            color: #ccc;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 50px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        h1, h2, h3 {
+            color: white;
+        }
+        h1 {
+            font-size: 2.5rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            margin-top: 40px;
+            color: #4da6ff;
+        }
+        p {
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+        ul {
+            margin-bottom: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        a {
+            color: #4da6ff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+        }
+        strong {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Return to Game</a>
+        
+        <h1>About the 3D Cube Simulator</h1>
+        
+        <p>Welcome to the <strong>3D Cube Simulator</strong>, a web-based interactive puzzle designed for speedcubers and enthusiasts. Our goal is to provide a seamless, realistic, and accessible way to practice your solving skills directly in the browser.</p>
+
+        <h2>How to Play</h2>
+        <p>The interface is built for intuitive control, simulating the physical mechanics of a real cube:</p>
+        <ul>
+            <li><strong>Rotate the View:</strong> Click and drag anywhere on the background to rotate the camera around the cube.</li>
+            <li><strong>Turn Faces:</strong> Click and drag on any of the cube's faces to rotate that specific layer. The controls support intuitive mouse flicking.</li>
+            <li><strong>Timer:</strong> The integrated centisecond timer allows you to track your solving speed accurately. It includes inspection time logic (manual start/stop).</li>
+            <li><strong>Undo/Redo:</strong> Made a mistake? Use the history buttons to step back through your moves.</li>
+        </ul>
+
+        <h2>The History of the Magic Cube</h2>
+        <p>The Magic Cube (originally Bűvös kocka) was invented in 1974 by Hungarian sculptor and professor of architecture <strong>Ernő Rubik</strong>. Originally created to help his students understand 3D objects, the puzzle didn't become a global toy sensation until the 1980s.</p>
+        <p>A standard 3x3x3 cube has six faces covered by nine stickers, each of one of six solid colors: white, red, blue, orange, green, and yellow. An internal pivot mechanism enables each face to turn independently, thus mixing up the colors.</p>
+        
+        <h3>Mathematics of the Cube</h3>
+        <p>The total number of permutations (arrangements) of a 3x3x3 cube is <strong>43,252,003,274,489,856,000</strong>. That's 43 quintillion! To put this into perspective, if you had as many standard-sized cubes as there are permutations, you could cover the Earth's surface 275 times.</p>
+        <p>Despite this massive complexity, "God's Number"—the maximum number of moves required to solve any scramble configuration—is only <strong>20</strong>.</p>
+
+        <h2>Speedcubing & Algorithms</h2>
+        <p>Speedcubing is the sport of solving the cube as quickly as possible. The current world record for a single solve is under 4 seconds. Most advanced solvers use the <strong>CFOP</strong> method:</p>
+        <ul>
+            <li><strong>Cross:</strong> Form a cross on the bottom layer (usually white).</li>
+            <li><strong>F2L (First Two Layers):</strong> Solve the first two layers by pairing corner and edge pieces.</li>
+            <li><strong>OLL (Orientation of the Last Layer):</strong> Orient all pieces on the top layer so the top face is a single color (usually yellow).</li>
+            <li><strong>PLL (Permutation of the Last Layer):</strong> Move the pieces on the top layer to their solved positions.</li>
+        </ul>
+        <p>This simulator is a perfect tool to practice these stages, test new algorithms, or simply relax with a casual solve.</p>
+
+        <h2>Contact & Support</h2>
+        <p>We are constantly improving the simulator. If you have feedback or feature requests, feel free to reach out.</p>
+
+    </div>
+</body>
+</html>
