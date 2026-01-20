@@ -690,6 +690,7 @@
         let intersectPoint = new THREE.Vector3();
         let intersectFaceNormal = new THREE.Vector3();
         let selectedCube = null;
+        let isPlaying = false; // Track if game is in progress (post-shuffle)
 
         // Timer & History
         // Timer & History
@@ -933,7 +934,13 @@
 
                         // Store initial grid coordinates for logic if needed,
                         // but we will rely on world position for selection.
-                        cube.userData = { isCubie: true };
+                        // Store initial grid coordinates for logic if needed,
+                        // but we will rely on world position for selection.
+                        cube.userData = { 
+                            isCubie: true,
+                            initialPosition: cube.position.clone(),
+                            initialQuaternion: cube.quaternion.clone()
+                        };
 
                         scene.add(cube);
                         cubes.push(cube);
@@ -1169,15 +1176,47 @@
                     scene.remove(pivot);
                     isRotating = false;
                     updateHistoryUI(); // Ensure UI is updated after rotation
+                    if (!isShuffle && !isRotating) { // isRotating set to false just above
+                        checkSolved();
+                    }
                 }
             }
             animateRotation();
+        }
+        
+        function checkSolved() {
+            if (!isPlaying) return;
+
+            // Check if all cubes are back to initial position and rotation
+            const isSolved = cubes.every(cube => {
+                const posDist = cube.position.distanceTo(cube.userData.initialPosition);
+                // For rotation, we check angle difference. 
+                // Note: Quaternion angleTo returns angle in radians. 
+                // We allow a small epsilon for floating point errors.
+                const rotAngle = cube.quaternion.angleTo(cube.userData.initialQuaternion);
+                
+                return posDist < 0.1 && rotAngle < 0.1;
+            });
+
+            if (isSolved) {
+                isPlaying = false;
+                stopTimer();
+                const timeText = document.getElementById('timer').textContent;
+                // specific user request: show alert with record
+                setTimeout(() => {
+                    alert(`Congratulations! You solved it!\nYour time: ${timeText}`);
+                }, 100); // Small delay to let renderer update the final move
+            }
         }
 
         // --- Game Features ---
 
         function shuffleCube() {
             if (isRotating) return;
+            
+            // Reset game state
+            isPlaying = false;
+            resetTimer();
 
             const axes = [
                 new THREE.Vector3(1, 0, 0),
@@ -1187,11 +1226,14 @@
             const positions = [-TOTAL_SIZE, 0, TOTAL_SIZE];
             const directions = [1, -1];
 
-            let moves = 20;
-            const interval = 150; // Fast shuffle
-
+            let moves = 50; // Increased from 20 to 50
+            
             function nextMove() {
-                if (moves <= 0) return;
+                if (moves <= 0) {
+                    isPlaying = true; // Start game
+                    startTimer(); // Auto start timer after shuffle
+                    return;
+                }
 
                 const axis = axes[Math.floor(Math.random() * axes.length)];
                 const posVal = positions[Math.floor(Math.random() * positions.length)];
@@ -1202,16 +1244,17 @@
 
                 const dir = directions[Math.floor(Math.random() * directions.length)];
 
-                // We need to bypass the animation for instant shuffle or speed it up
-                // For simplicity, let's just call rotateLayer but we need to wait for it
-                // Since rotateLayer is async (animation), we can't easily loop.
-                // Let's make a fast version or just chain them.
-
-                // Actually, let's just trigger it and wait.
+                // Use even faster speed for shuffle
                 rotateLayer(axis, point, dir, null, false, true);
 
                 moves--;
-                setTimeout(nextMove, 400); // Wait for animation to finish
+                // Wait for animation (speed=0.5 -> 2 frames approx? No, logic depends on speed)
+                // In rotateLayer: speed = isShuffle ? 0.5 : ANIMATION_SPEED
+                // If speed is 0.5, progress adds 0.5 per frame. 
+                // Frame 1: 0.5. Frame 2: 1.0. Done.
+                // So 2 frames ~32ms. 
+                // Let's set timeout to 60ms to be safe and fast.
+                setTimeout(nextMove, 80); 
             }
 
             nextMove();
